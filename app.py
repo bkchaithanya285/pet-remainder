@@ -6,17 +6,19 @@ import smtplib
 import time
 import threading
 import pandas as pd
+import json
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 # -------------------- FIREBASE INITIALIZATION --------------------
 if not firebase_admin._apps:
-    cred = credentials.Certificate("firebase_key.json")
+    firebase_config = json.loads(st.secrets["FIREBASE"])  # Secure from Streamlit Secrets
+    cred = credentials.Certificate(firebase_config)
     firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 
-# -------------------- EMAIL FUNCTION (UTF-8 Safe) --------------------
+# -------------------- EMAIL FUNCTION --------------------
 def send_email(to_email, subject, message):
     sender_email = "petremainder@gmail.com"
     sender_password = "gqguiecwiapumctq"  # Gmail App Password (no spaces)
@@ -32,6 +34,7 @@ def send_email(to_email, subject, message):
             server.starttls()
             server.login(sender_email, sender_password)
             server.send_message(msg)
+
         print(f"✅ Email sent to {to_email}")
     except Exception as e:
         print("❌ Email sending failed:", e)
@@ -106,7 +109,7 @@ if records:
     df = pd.DataFrame(records).drop(columns=["id"])
     st.dataframe(df, use_container_width=True)
 
-    # Download as CSV only
+    # Download as CSV
     csv = df.to_csv(index=False).encode("utf-8")
     st.download_button("⬇️ Download Table as CSV", data=csv, file_name="pet_reminders.csv", mime="text/csv")
 
