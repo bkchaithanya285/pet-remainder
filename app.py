@@ -6,13 +6,12 @@ import smtplib
 import time
 import threading
 import pandas as pd
-import json
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 # -------------------- FIREBASE INITIALIZATION --------------------
 if not firebase_admin._apps:
-    firebase_config = json.loads(st.secrets["FIREBASE"])  # Secure from Streamlit Secrets
+    firebase_config = dict(st.secrets["FIREBASE"])  # ✅ Secure from Streamlit Secrets
     cred = credentials.Certificate(firebase_config)
     firebase_admin.initialize_app(cred)
 
@@ -43,6 +42,13 @@ def send_email(to_email, subject, message):
 st.set_page_config(page_title="Pet Vaccination Reminder", page_icon="🐾", layout="wide")
 st.title("🐾 Pet Vaccination Reminder App")
 st.write("Add, manage, and download your pet vaccination reminders easily.")
+
+# 🔍 Firebase Connection Test
+try:
+    db.collection("test_connection").document("ping").set({"status": "connected"})
+    st.success("✅ Firebase connected successfully!")
+except Exception as e:
+    st.error(f"❌ Firebase connection failed: {e}")
 
 hours = [f"{h:02d}" for h in range(24)]
 minutes = [f"{m:02d}" for m in range(60)]
